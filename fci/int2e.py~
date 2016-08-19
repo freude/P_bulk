@@ -1,0 +1,95 @@
+#!/usr/bin/python
+
+"""The module of the CoulombInt class."""
+
+import numpy as np
+import crys
+from itertools import combinations_with_replacement as cr
+import const
+import sys
+import contextlib
+import os
+
+
+class CoulombInt(object):
+
+    """Computes Coulomb integrals."""
+
+    def __init__(self, N=2, **kw):
+
+        self.N = N                              # number of basis functions
+        self.comb = self.specialCombinations()  # four factor products
+
+        self._load = kw.get('pload', '/data/users/mklymenko/work_py/mb_project/')
+        self._save = kw.get('psave', '/data/users/mklymenko/work_py/mb_project/')
+
+        self.cint = []
+
+        if os.path.isfile('/data/users/mklymenko/work_py/mb_project/coint2.dat'):
+            os.remove('/data/users/mklymenko/work_py/mb_project/coint2.dat')
+
+        try:               # try to read integrals from the disk
+            with open(self._load + "coint2.dat"):
+                self.cint = np.loadtxt(self._load + "coint2.dat")
+        except IOError:    # there are no integrals on the disk
+            # computing integrals for all possible combinations stored in self.comb
+            self.cint = [self.comp_int(j) for j in self.comb]
+            self.save()
+
+    #-----------------------------------
+    def getInt(self, vec):
+        i = self.comb.index(tuple(sorted(vec)))
+        return self.cint[i]
+
+    #-----------------------------------
+    def specialCombinations(self):
+
+        """This function computes the number of possible configurations
+        of N basis functions into poducts of four functions."""
+
+        vec = list(xrange(self.N))
+        b = []
+ #       for a1 in cr(vec, 2):
+ #           for a2 in cr(vec, 2):
+ #               b.append(a1+a2)
+        for a in cr(vec, 4):
+            b.append(a)
+        return b
+
+    #-----------------------------------
+
+    @staticmethod
+    def overlap_int(gf1,gf2):
+        """Overlap integral for two s-gaussian functions"""
+
+        r1=pow((gf1[0]-gf2[0]),2)+pow((gf1[1]-gf2[1]),2)+pow((gf1[2]-gf2[2]),2)
+        return pow((const.pi/(gf1[3]+gf2[3])),(3/2))*np.exp(-(r1*gf1[3]*gf2[3])/(gf1[3]+gf2[3]))
+
+    #----------------------------------
+
+    @staticmethod
+    def comp_int(j):
+
+        integral=0
+
+        return integral
+    #-----------------------------------
+
+    def sum2(self, j, i):
+        ans = 0
+        for k in xrange(self.N):
+            ans+=self.getInt([j,i,k,k])
+
+        return ans
+
+    def save(self):     # fixed number of functions, varied amplitudes and widths
+        if (self._save != '0'):
+            p = self._save + "coint2.dat"
+            np.savetxt(p, self.cint)
+        else:
+            sys.exit("Wrong path to save")
+
+if __name__ == "__main__":
+
+    c=CoulombInt()
+    print(np.array([c.comb,c.cint]).T)

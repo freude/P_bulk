@@ -1,0 +1,8 @@
+include "mesh_gen.idp"
+
+verbosity=0;				//это как много выводить в консоль текста
+
+real [int,int] BBB=[[-7,7],[-7,7],[-7,7]]; //coordinates the cube
+mesh3 Th=meshgen(BBB, 0, 0, 0, 1); // numbers are coordinates of impurities
+medit(1,Th);
+savemesh(Th,"/data/users/mklymenko/abinitio_software/abi_files/tpaw/ready_code/dis_scr/mesh_sample.mesh"); // save mesh for further processing

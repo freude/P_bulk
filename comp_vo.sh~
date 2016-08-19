@@ -1,0 +1,6 @@
+#!/bin/bash
+
+WDIR=$(pwd)
+
+matlab -nojvm -nodisplay -nosplash -r "run('$WDIR/pot_for_ff.m');exit;"
+
