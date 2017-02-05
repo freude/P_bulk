@@ -33,7 +33,7 @@ qn = [[1, 0, 0, -2.56853, 1.12186, 0.24792],      #1s_sigma_g
 #    7 0  0 -0.2776;...
 #    8 0  0 -0.2125];
 
-num_cells = 140
+num_cells = 40
 T = 4
 
 coorsys = CoordSys(num_cells,T,'au')
@@ -48,7 +48,7 @@ s=X1.shape
 Ra = [0, 0, -0.7]
 Rb = [0, 0,  0.7]
 R = np.sqrt((Rb[0]-Ra[0])**2+(Rb[1]-Ra[1])**2+(Rb[2]-Ra[2])**2);
-
+print R
 ra = np.sqrt((X1-Ra[0])**2+(Y1-Ra[1])**2+(Z1-Ra[2])**2)
 rb = np.sqrt((X1-Rb[0])**2+(Y1-Rb[1])**2+(Z1-Rb[2])**2)
 
@@ -56,15 +56,14 @@ lam = np.divide((ra+rb), (R))
 mu = np.divide((ra-rb), (R))
 phi = np.arctan2(Y1, X1)
 
-bas_fun = list()
-bas_fun[0] = x
+bas_fun = [x]
 
 for jj in range(N_states):
 
    if qn[jj][2]==0:
-       bas_fun[jj+1] = LargeLambda(qn[jj], jj, lam)*LargeM(qn[jj],jj,mu)*np.exp(1j*qn[jj][2]*phi)
+       bas_fun.append(LargeLambda(qn[jj], jj, lam)*LargeM(qn[jj],jj,mu)*np.exp(1j*qn[jj][2]*phi))
    else:
-       bas_fun[jj+1] = np.imag(LargeLambda(qn[jj], jj, lam)*LargeM(qn[jj],jj,mu)*np.exp(1j*qn[jj][2]*phi))
+       bas_fun.append(np.imag(LargeLambda(qn[jj], jj, lam)*LargeM(qn[jj],jj,mu)*np.exp(1j*qn[jj][2]*phi)))
 
 
    ME = np.trapz(np.trapz(np.trapz(np.abs(bas_fun[jj+1])**2, x, axis=2), x, axis=1), x, axis=0)

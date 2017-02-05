@@ -23,9 +23,8 @@ def LargeM(qn, jj, x):
             s = 2*(j+1)-2
         else:
             s = 2*(j+1)-1
-
-        for jj in range(len(x)):
-            y[jj]=y[jj]+np.multiply(f[jj][j], lpmv(m+s,m,x[jj]))
+        print jj, j
+        y=y+f[jj][j]*lpmv(m+s,m,x)
 
     # y=y.*((1-x.^2).^(abs(m)/2));
 
