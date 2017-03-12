@@ -1,6 +1,6 @@
 import numpy as np
-from scipy.special import lpmv
-
+from scipy.special import binom
+from  math import floor, factorial
 
 def LargeM(qn, jj, x):
 
@@ -15,18 +15,18 @@ def LargeM(qn, jj, x):
        [   1.0091,  0.006089,   0.000019,        0.0],   #2p_pi_u
        [   1.0068,  0.002717,   0.000003,        0.0]]   #3d_pi_g
 
-    y = np.zeros(len(x))
-    m=qn[3]
+    y = np.zeros(x.shape)
+    m=qn[2]
 
     for j in range(len(f[jj])):
         if (qn[1] + qn[2])%2 == 0:
             s = 2*(j+1)-2
         else:
             s = 2*(j+1)-1
-        print jj, j
-        y=y+f[jj][j]*lpmv(m+s,m,x)
+        print(m+s, m)
+        y=y+f[jj][j]*AssociatedLegendre(m+s, m, x)
 
-    # y=y.*((1-x.^2).^(abs(m)/2));
+    #y=y*((1.0-x**2)**(abs(m)/2))
 
     return y
 
@@ -44,7 +44,7 @@ def LargeLambda(qn,jj,x):
        [1.0,   0.0224,  -0.0002,   0.0,     0.0,    0.0,    0.0],  # 2p_pi_u
        [1.0,   0.6179,  -0.0011,   0.0,     0.0,    0.0,    0.0]]  # 3d_pi_g
 
-    y = np.zeros(len(x))
+    y = np.zeros(x.shape)
 
     for j in range(len(g[jj])):
         y = y+g[jj][j]*np.power(np.divide(x-1, x+1), j)
@@ -53,6 +53,12 @@ def LargeLambda(qn,jj,x):
     sigma = qn[5]
     m = qn[2]
 
-    y=np.exp(-p*x)*((x**2-1)**(abs(m)/2))*((x+1)**sigma)*y
-
+    y=np.exp(-p*x)*((x**2-1)**((m)/2))*((x+1)**sigma)*y
     return y
+
+def AssociatedLegendre(l, m, x):
+    Alm=np.zeros(x.shape)
+    for r in range(floor(1/2*l-1/2*abs(m))+1):
+        Alm=Alm+((-1)**r)*binom(l-2*r,abs(m))*binom(l,r)*binom(2*l-2*r,l)*(x**(l-2*r-abs(m)))
+
+    return ((-1)**m)*((1.0-x**2)**(abs(m)/2))*(factorial(abs(m))/(2**l)*Alm)
