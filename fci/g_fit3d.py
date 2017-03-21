@@ -50,12 +50,12 @@ class GFit(object):
 
         # print(self._load)
 
-        print '\n---------------------------------------------------------------------'
-        print 'The fitting is provided for the file'
-        print self._path+'ff_'+str(self._sn)+'.dat'
-        print '    the quantum state         {}'.format(self._qn)
-        print '    the primitive Gaussians  {}'.format(self._num_fu)
-        print '---------------------------------------------------------------------\n'
+        print('\n---------------------------------------------------------------------')
+        print('The fitting is provided for the file')
+        print(self._path+'ff_'+str(self._sn)+'.dat')
+        print('    the quantum state         {}'.format(self._qn))
+        print('    the primitive Gaussians  {}'.format(self._num_fu))
+        print('---------------------------------------------------------------------\n')
 
         initia = kw.get('init', 'fit')
 
@@ -64,15 +64,15 @@ class GFit(object):
                 with open(self._load):
                     self._gf = np.loadtxt(self._load)
                     self._num_fu=len(self._gf)/5
-                print 'The fitting parameters are found to be stored on the disk'
-                print 'I am just going to read them from'
-                print self._load
+                print('The fitting parameters are found to be stored on the disk')
+                print('I am just going to read them from')
+                print(self._load)
 
             except IOError:
 
-                print 'Oh dear.'
-                print 'There is no parameters stored on the disk'
-                print 'I launch the fitting procedure. It will take time...'
+                print('Oh dear.')
+                print('There is no parameters stored on the disk')
+                print('I launch the fitting procedure. It will take time...')
 
                 # self.do_fit_seq(8,1)
                 # #doing fitting or loading parameters from disk
@@ -81,7 +81,7 @@ class GFit(object):
 
     @property
     def gf(self):
-        for j in xrange(self._num_fu):
+        for j in range(self._num_fu):
             self._gf[j*5+3] = 1.0/abs(self._gf[j*5+3])
         return np.reshape(self._gf, (self._num_fu, -1))
 
@@ -103,9 +103,9 @@ class GFit(object):
         y_min = []
         z_min = []
 
-        for j1 in xrange(10, arr.shape[0]-10):
-            for j2 in xrange(10, arr.shape[1]-10):
-                for j3 in xrange(10, arr.shape[2]-10):
+        for j1 in range(10, arr.shape[0]-10):
+            for j2 in range(10, arr.shape[1]-10):
+                for j3 in range(10, arr.shape[2]-10):
                     if (np.absolute(arr[j1, j2, j3]) > 0.3*max_value):
 
                         aaaa = [
@@ -225,7 +225,7 @@ class GFit(object):
 
         g = np.zeros(len(x[0]))
 
-        for j in xrange(len(par)/5):
+        for j in range(len(par)/5):
             x1 = par[j*5]
             x2 = par[j*5+1]
             x3 = par[j*5+2]
@@ -313,7 +313,7 @@ class GFit(object):
         elif (self._flag == 2):
 
 #            par=[0.0]*(self._num_fu*5)
-#            for j in xrange(self._num_fu):
+#            for j in range(self._num_fu):
 #                par[j*5]=0.0*math.copysign(1,(pow(-1,j)))
 # self._gf[j*5]=0.1
 #                par[j*5+1]=6.45
@@ -326,7 +326,7 @@ class GFit(object):
 #            height, xx, width=self.moments(F)
 #            Tracer()()
 #            par=[0.0]*(self._num_fu*5)
-#            for j in xrange(self._num_fu):
+#            for j in range(self._num_fu):
 # par[j*5]=x[0,xx]
 #                par[j*5]=X[0,xx]*math.copysign(1,(pow(-1,j)))
 #                par[j*5+1]=X[1,xx]
@@ -344,14 +344,14 @@ class GFit(object):
 #            aaa1,bbb1=self.detect_local_minima(-AA.reshape(xi.shape))
 #            aaa2,bbb2=self.detect_local_maxima(-AA.reshape(xi.shape))
             if self.peaks==[]:
-                print '\n---------------------------------------------------------------------'
-                print 'Detecting maxima and minima of target function...',
+                print('\n---------------------------------------------------------------------')
+                print('Detecting maxima and minima of target function...',)
 
                 peaks_min, min_coord, peaks_max, max_coord = self.detect_min_max(AA.reshape(xi.shape))
-                print 'done'
-                print 'Number of the min peaks: {}'.format(len(peaks_min))
-                print 'Number of the max peaks: {}'.format(len(peaks_max))
-                print '---------------------------------------------------------------------\n'
+                print('done')
+                print('Number of the min peaks: {}'.format(len(peaks_min)))
+                print('Number of the max peaks: {}'.format(len(peaks_max)))
+                print('---------------------------------------------------------------------\n')
     #            fig=plt.figure()
     #            ax = fig.add_subplot(111, projection='3d')
     #            ax.plot_surface(xi[:,:,60],yi[:,:,60],bbb2[:,:,60], cmap=cm.jet, linewidth=0.2)
@@ -371,7 +371,7 @@ class GFit(object):
             par = [0.0]*(self._num_fu*5)
             j1 = 0
             aaaa = 1
-            for j in xrange(self._num_fu):
+            for j in range(self._num_fu):
                 if (j > aaaa*self.coords.shape[1]-1):
                     j1 = 0
                     aaaa += 1
@@ -415,7 +415,7 @@ class GFit(object):
 #
 #        elif (self._flag == 2):
 #            par = [0.0]*(self._num_fu*5)
-#            for j in xrange(self._num_fu):
+#            for j in range(self._num_fu):
 #                par[j*5] = 0.0*math.copysign(1, (pow(-1, j)))
 #                # self._gf[j*5]=0.1
 #                par[j*5+1] = 6.45
@@ -469,7 +469,7 @@ class GFit(object):
 #                x, F = self.read_from_file(
 #                    self._sn, self._qn, self._path)  # read data from the file
 ##                par=[0.0]*(Nmax_first*5)
-##                for j in xrange(Nmax_first):
+##                for j in range(Nmax_first):
 ##                    par[j*5]=1.1*math.copysign(1,(pow(-1,j)))
 ## self._gf[j*5]=0.1
 ##                    par[j*5+1]=6.45
@@ -480,7 +480,7 @@ class GFit(object):
 #                height, xx, width = self.moments(F)
 #
 #                par = [0.0]*(Nmax_first*5)
-#                for j in xrange(Nmax_first):
+#                for j in range(Nmax_first):
 ##                    par[j*5]=x[0,xx]
 #                    par[j*5] = x[0, xx]*math.copysign(1, (pow(-1, j)))
 #                    par[j*5+1] = x[1, xx]
@@ -505,7 +505,7 @@ class GFit(object):
 #                    height, xx, width = self.moments(F1)
 #                    par = [0.0]*(5*Nmax)
 #
-#                    for j in xrange(Nmax):
+#                    for j in range(Nmax):
 ##                        par[j*5]=x[0,np.absolute(F1).argmax()]
 ##                        par[j*5+1]=x[1,np.absolute(F1).argmax()]
 ##                        par[j*5+2]=x[2,np.absolute(F1).argmax()]
@@ -568,7 +568,7 @@ if __name__ == "__main__":
         pload='/data/users/mklymenko/work_py/mb_project/')
 
     wf.save()
-    print wf._gf
+    print(wf._gf)
     # wf.draw_func(x,y,par='2d')
     g = wf.show_func(XX)
     g1 = wf.show_gf(XXX)
@@ -587,7 +587,7 @@ if __name__ == "__main__":
     plt.contour(xi, yi, -AA.reshape(xi.shape), colors='red')
     plt.contour(xi, yi, -g.reshape(xi.shape), colors='blue')
 
-    # x=[j for j in xrange(wf.error.__len__())]
+    # x=[j for j in range(wf.error.__len__())]
     # plt.plot(x,wf.error)
 
     plt.hold(True)

@@ -49,6 +49,18 @@ def of(fn):
 
     return E
 
+
+def table2mat(data):
+    array_list = np.split(data, 4, axis=1)
+    array_list = [np.reshape(item, (round(data.shape[0] ** (1 / 3)),
+                                    round(data.shape[0] ** (1 / 3)),
+                                    round(data.shape[0] ** (1 / 3)))) for item in array_list]
+    return array_list
+
+
+def mat2table(X,Y,Z,F):
+    return np.vstack((X.flatten(), Y.flatten(), Z.flatten(), F.flatten())).T
+
 if __name__ == "__main__":
 
     print(mat3ind(1, 3))

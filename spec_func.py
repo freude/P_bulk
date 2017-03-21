@@ -23,7 +23,7 @@ def LargeM(qn, jj, x):
             s = 2*(j+1)-2
         else:
             s = 2*(j+1)-1
-        print(m+s, m)
+        # print(m+s, m)
         y=y+f[jj][j]*AssociatedLegendre(m+s, m, x)
 
     #y=y*((1.0-x**2)**(abs(m)/2))

@@ -6,10 +6,14 @@ from spec_func import *
 # num_cells=4;
 # T=80;
 
-num_cells = 60
-T = 8
+# num_cells = 50
+# T = 6
 
-N_states = 10
+num_cells = 50
+T = 5
+
+
+N_states = 2
 
 #      n  l  m      E        p      sigma
 qn = [[1, 0, 0, -2.56853, 1.12186, 0.24792],      #1s_sigma_g
@@ -26,7 +30,6 @@ qn = [[1, 0, 0, -2.56853, 1.12186, 0.24792],      #1s_sigma_g
 coorsys = CoordSys(num_cells,T,'au')
 coorsys.set_origin_cells(num_cells/2+1)
 x=coorsys.x()
-
 [X1,Y1,Z1] = np.meshgrid(x,x,x)
 s=X1.shape
 
@@ -35,7 +38,6 @@ s=X1.shape
 Ra = [0, 0, -0.7]
 Rb = [0, 0,  0.7]
 R = np.sqrt((Rb[0]-Ra[0])**2+(Rb[1]-Ra[1])**2+(Rb[2]-Ra[2])**2)
-print(R)
 ra = np.sqrt((X1-Ra[0])**2+(Y1-Ra[1])**2+(Z1-Ra[2])**2)
 rb = np.sqrt((X1-Rb[0])**2+(Y1-Rb[1])**2+(Z1-Rb[2])**2)
 
@@ -44,26 +46,73 @@ mu = np.divide((ra-rb), (R))
 phi = np.arctan2(Y1, X1)
 
 bas_fun = [x]
+# X1, Y1, Z1 = X1.flatten(), Y1.flatten(), Z1.flatten()
 
 for jj in range(N_states):
-   if qn[jj][2]==0:
+    if qn[jj][2]==0:
        bas_fun.append(LargeLambda(qn[jj], jj, lam)*LargeM(qn[jj],jj,mu)*np.cos(qn[jj][2]*phi))
-   else:
+    else:
        bas_fun.append(LargeLambda(qn[jj], jj, lam)*LargeM(qn[jj],jj,mu)*np.sin(qn[jj][2]*phi))
 
-   bas_fun[jj + 1] = np.nan_to_num(bas_fun[jj + 1])
+    bas_fun[jj + 1] = np.nan_to_num(bas_fun[jj + 1])
 
-   ME = np.trapz(np.trapz(np.trapz(np.abs(bas_fun[jj+1])**2, x, axis=2), x, axis=1), x, axis=0)
-   print(ME)
-   bas_fun[jj+1]=bas_fun[jj+1]/np.sqrt(ME)
+    ME = np.trapz(np.trapz(np.trapz(np.abs(bas_fun[jj+1])**2, x, axis=2), x, axis=1), x, axis=0)
+    print(ME)
+    bas_fun[jj+1]=bas_fun[jj+1]/np.sqrt(ME)
 
-plt.imshow((bas_fun[10][:,80,:]))
+
+# a=plt.contour((bas_fun[1][:,125,:]), 30); plt.colorbar()
+# plt.imshow((bas_fun[1][:,125,:]))
+# plt.show()
+
+from fci.gauss_fit import GFit
+
+qn=1
+
+# data = np.vstack((X1, Y1, Z1, bas_fun[qn].flatten())).T
+
+wf = GFit(init='fit',
+          sn=10,
+          qn=qn,
+          mf=2,
+          num_fu=12,
+          psave='./',
+          pload='./')
+
+wf.do_fit(bas_fun[1], x=X1, y=Y1, z=Z1)
+
+x = np.linspace(-6.5, 6.5, 300)
+y = np.linspace(4.0, 8.9, 300)
+
+XXX = np.vstack((x, x * 0.0 + 6.45, 0.0 * x))
+
+xi, yi = np.meshgrid(x, y)
+x, y = xi.flatten(), yi.flatten()
+z = x * 0.0
+XX = np.vstack((x, y, z))
+
+wf.save()
+print(wf._gf)
+# wf.draw_func(x,y,par='2d')
+g = wf.show_func(XX)
+g1 = wf.show_gf(XXX)
+AA = wf.get_value(XX.T)
+
+fig = plt.figure()
+# for j in range(0,wf._num_fu):
+#     plt.plot(XXX[0,:].T,g1[:,j])
+
+# plt.plot(xi[150, :].T, g.reshape(xi.shape)[150, :])
+# plt.plot(xi[150, :].T, AA.reshape(xi.shape)[150, :])
+
+# ax = fig.add_subplot(111, projection='3d')
+# ax.plot_surface(xi,yi,g1.reshape(xi.shape), cmap=cm.jet, linewidth=0.2)
+
+plt.contour(xi, yi, -AA.reshape(xi.shape), colors='red')
+plt.contour(xi, yi, -g.reshape(xi.shape), colors='blue')
+
+plt.hold(True)
 plt.show()
 
-# save(strcat(pwd,'/dis_scr/bas_fun.mat'), 'bas_fun', '-v7.3');
-#
-# a1=qn(1:N_states,4).*40;
-# Nbands=N_states;
-# save(strcat(pwd,'/dis_scr/M.mat'), 'Nbands', 'a1');
 
 
