@@ -2,11 +2,9 @@
     The class is for fitting a grid function by a set of gaussian functions
 """
 
-from IPython.core.debugger import Tracer
 import glob
 import os
 import sys
-import numpy as np
 from scipy.optimize import curve_fit
 from scipy.interpolate import Rbf
 import math
@@ -15,20 +13,20 @@ import scipy.ndimage.filters as filters
 import scipy.ndimage.morphology as morphology
 # -----------------------------------------------------------
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
 from fci.invdisttree import Invdisttree
 # -----------------------------------------------------------
 import numpy as np
 from scipy.ndimage.filters import maximum_filter, minimum_filter
 from scipy.ndimage import binary_dilation
 from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
-import matplotlib.pyplot as pp
 from fci.aux_fun import mat2table
+
 
 class GFit(object):
 
-    def __init__(self, data = None, **kw):
+    __slots__ = ('_boundaries', '_save', '_num_fu', '_sn', '_qn', '_model', '_init_mode', '_gf', 'peaks', 'is_fitted')
+
+    def __init__(self, data=None, **kw):
 
         # path to load/save fitting parameters
         self._save = kw.get('psave', '/data/users/mklymenko/work_py/mb_project/')
@@ -36,13 +34,25 @@ class GFit(object):
         self._num_fu = kw.get('num_fu', 55)  # number of Gaussian primitive functions
         self._sn = kw.get('sn', 0)           # id of the system
         self._qn = kw.get('qn', 0)           # id of the wave function
-        self._flag = kw.get('mf', 2)         # choice of the model function
+        self._model = None                   # choice of the model function
+        self._init_mode = None               # choice of the init method
 
-        self._save = os.path.join(self._save, str(self._sn), '_', str(self._qn), '.dat')
+        self._save = os.path.join(self._save, str(self._sn), '_', str(self._qn), '.npy')
 
         self._gf = []
         self.peaks = []
-        self.coords = []
+        self.is_fitted = False
+        self._boundaries = []
+
+        if os.path.isfile(self._save):
+            self.print_info()
+            self._gf = np.load(self._gf)
+            self.is_fitted = True
+        else:
+            if data is not None:
+                self.do_fit(data)
+
+    def print_info(self):
 
         print('\n---------------------------------------------------------------------')
         print('The fitting is provided for the function')
@@ -50,8 +60,59 @@ class GFit(object):
         print('The number of primitive Gaussians is {}'.format(self._num_fu))
         print('---------------------------------------------------------------------\n')
 
-        if data is not None:
-            self.do_fit(data)
+    def initialize(self):
+
+        if (self._flag == 2):
+            if not self.peaks:
+                print('\n---------------------------------------------------------------------')
+                print('Detecting maxima and minima of target function...', )
+
+                if x is None:
+                    peaks_min, min_coord, peaks_max, max_coord = self.detect_min_max(data)
+                else:
+                    peaks_min, min_coord, peaks_max, max_coord = detect_peaks(x, y, z, data)
+
+                print('done')
+                print('Number of the min peaks: {}'.format(len(peaks_min)))
+                print('Number of the max peaks: {}'.format(len(peaks_max)))
+                print('---------------------------------------------------------------------\n')
+
+                if peaks_max == []:
+                    self.peaks = np.insert(peaks_min, np.arange(len(peaks_max)), peaks_max)
+                    self.coords = np.insert(min_coord, np.arange(max_coord.shape[1]), max_coord, axis=1)
+                else:
+                    self.peaks = np.insert(peaks_max, np.arange(len(peaks_min)), peaks_min)
+                    self.coords = np.insert(max_coord, np.arange(min_coord.shape[1]), min_coord, axis=1)
+
+            if x is not None:
+                data = mat2table(x, y, z, data)
+
+            par = [0.0] * (self._num_fu * 5)
+            j1 = 0
+            aaaa = 1
+            for j in range(self._num_fu):
+                if (j > aaaa * self.coords.shape[1] - 1):
+                    j1 = 0
+                    aaaa += 1
+                par[j * 5] = self.coords[0, j1]
+                par[j * 5 + 1] = self.coords[1, j1]
+                par[j * 5 + 2] = self.coords[2, j1]
+                # par[j*5+3] = 0.1003+0.1000*math.copysign(1, (pow(-1, j)))
+                par[j * 5 + 3] = 0.0001
+                #                if j < 15:
+                #                    par[j*5+3] = 0.00001
+                #                else:
+                #                    par[j*5+3] = 0.0005
+                par[j * 5 + 4] = self.peaks[j1]
+                #                print(coords[0, j1], coords[1, j1], coords[2, j1])
+                j1 += 1
+
+        return par
+
+    def get_value(self,x):
+        X, F = self.read_from_file(self._sn, self._qn, self._path)
+        invdisttree = Invdisttree(X.T, F, leafsize=10, stat=1)
+        return invdisttree(x, nnear=130, eps=0, p=1)
 
     @staticmethod
     def resample(data, xx, yy, zz):
@@ -78,60 +139,6 @@ class GFit(object):
 
         return detect_peaks(xi, yi, zi, arr)
 
-        # max_value = max(np.absolute(np.reshape(arr, -1)))
-        # peaks_max = []
-        # peaks_min = []
-        # x_max = []
-        # y_max = []
-        # z_max = []
-        # x_min = []
-        # y_min = []
-        # z_min = []
-        #
-        # for j1 in range(10, arr.shape[0]-10):
-        #     for j2 in range(10, arr.shape[1]-10):
-        #         for j3 in range(10, arr.shape[2]-10):
-        #             if (np.absolute(arr[j1, j2, j3]) > 0.3*max_value):
-        #
-        #                 aaaa = [
-        #                     arr[j1, j2, j3 + 1], arr[j1, j2 + 1, j3],
-        #                     arr[j1 + 1, j2, j3], arr[j1, j2, j3 - 1],
-        #                     arr[j1, j2 - 1, j3], arr[j1 - 1, j2, j3],
-        #                     arr[j1 + 1, j2 + 1, j3 + 1],
-        #                     arr[j1 - 1, j2 - 1, j3 - 1],
-        #                     arr[j1 - 1, j2 + 1, j3 + 1], arr[j1, j2 + 1, j3 + 1],
-        #                     arr[j1, j2 - 1, j3 - 1], arr[j1, j2 - 1, j3 + 1],
-        #                     arr[j1, j2 + 1, j3 - 1], arr[j1 + 1, j2, j3 + 1],
-        #                     arr[j1 - 1, j2, j3 - 1], arr[j1 - 1, j2, j3 + 1],
-        #                     arr[j1 + 1, j2, j3 - 1], arr[j1 + 1, j2 + 1, j3],
-        #                     arr[j1 - 1, j2 - 1, j3], arr[j1 + 1, j2 - 1, j3],
-        #                     arr[j1 - 1, j2 + 1, j3], arr
-        #                     [j1 + 1, j2 - 1, j3 + 1], arr
-        #                     [j1 + 1, j2 + 1, j3 - 1], arr
-        #                     [j1 - 1, j2 - 1, j3 + 1], arr
-        #                     [j1 + 1, j2 - 1, j3 - 1], arr
-        #                     [j1 - 1, j2 + 1, j3 - 1]]
-        #                 bbbb = [
-        #                     arr[j1, j2, j3 + 9], arr[j1, j2 + 9, j3],
-        #                     arr[j1 + 9, j2, j3], arr[j1, j2, j3 - 9],
-        #                     arr[j1, j2 - 9, j3], arr[j1 - 9, j2, j3]]
-        #
-        #                 if ((arr[j1, j2, j3] > max(aaaa)) and (max(aaaa) > max(bbbb))):
-        #                     peaks_max = np.append(peaks_max, arr[j1, j2, j3])
-        #                     x_max = np.append(x_max, xi[j1, j2, j3])
-        #                     y_max = np.append(y_max, yi[j1, j2, j3])
-        #                     z_max = np.append(z_max, zi[j1, j2, j3])
-        #
-        #                 if ((arr[j1, j2, j3] < min(aaaa)) and (min(aaaa) < min(bbbb))):
-        #                     peaks_min = np.append(peaks_min, arr[j1, j2, j3])
-        #                     x_min = np.append(x_min, xi[j1, j2, j3])
-        #                     y_min = np.append(y_min, yi[j1, j2, j3])
-        #                     z_min = np.append(z_min, zi[j1, j2, j3])
-        #
-        # return peaks_min, np.vstack(
-        #     (x_min, y_min, z_min)), peaks_max, np.vstack(
-        #     (x_max, y_max, z_max))
-
     @staticmethod
     def coords_of_cube(data):
 
@@ -149,26 +156,9 @@ class GFit(object):
 
         if self._save != '0':
             p = self._save+self._path[-3:-1]+'_'+str(self._qn)+'.dat'
-            np.savetxt(p, self._gf)
+            np.save(self._gf, p)
         else:
             sys.exit("Wrong path to save")
-
-# -------------------------------------------------------------------------
-# -------------------------------model functions---------------------------
-# -------------------------------------------------------------------------
-
-#    def modelfun(self, x, *par):
-#
-#        g = np.zeros(len(x[0]))
-#
-#        for j in range(0, len(self._sites)):
-#            r1 = pow((x[0]-self._sites[j, 0]), 2) + \
-#                pow((x[1]-self._sites[j, 1]), 2)+pow((x[2]-self._sites[j, 2]), 2)
-#            for j1 in range(0, (len(par)/2/len(self._sites))):
-#                g = g+par[j*len(par)/len(self._sites)/2+j1] * \
-#                    np.exp(-r1/par[len(par)/2+j*len(par)/len(self._sites)/2+j1])
-#
-#        return g
 
     def modelfun1(self, x, *par):
         """
@@ -254,6 +244,8 @@ class GFit(object):
 
     def do_fit(self, data, x=None, y=None, z=None):
         """ The function does the fitting procedure"""
+
+        self.print_info()
 
         if (self._flag == 1):
 

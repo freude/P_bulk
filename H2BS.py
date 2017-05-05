@@ -10,7 +10,7 @@ from spec_func import *
 # T = 6
 
 num_cells = 50
-T = 5
+T = 1
 
 
 N_states = 2
@@ -91,7 +91,7 @@ x, y = xi.flatten(), yi.flatten()
 z = x * 0.0
 XX = np.vstack((x, y, z))
 
-wf.save()
+# wf.save()
 print(wf._gf)
 # wf.draw_func(x,y,par='2d')
 g = wf.show_func(XX)
