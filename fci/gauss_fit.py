@@ -20,15 +20,32 @@ from scipy.ndimage.filters import maximum_filter, minimum_filter
 from scipy.ndimage import binary_dilation
 from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
 from fci.aux_fun import mat2table
+import pickle
 
 
 class GFit(object):
 
-    __slots__ = ('_boundaries', '_save', '_num_fu', '_sn', '_qn', '_model', '_init_mode', '_gf', 'peaks', 'is_fitted')
+    __slots__ = ('_boundaries', '_save', '_num_fu', '_sn', '_qn', '_model', '_init_mode', '_gf', '_is_fitted')
 
-    def __init__(self, data=None, **kw):
+    def __new__(cls, *args):
 
-        # path to load/save fitting parameters
+        if isinstance(args[0], str):
+            psave=args[0]
+        else:
+            psave=None
+
+        if psave:
+            with open(psave) as f:
+                inst = pickle.load(f)
+            if not isinstance(inst, cls):
+                raise TypeError('Unpickled object is not of type {}'.format(cls))
+        else:
+            inst = super(GFit, cls).__new__(cls, *args)
+        return inst
+
+    def __init__(self, **kw):
+
+        # path to save fitting parameters
         self._save = kw.get('psave', '/data/users/mklymenko/work_py/mb_project/')
 
         self._num_fu = kw.get('num_fu', 55)  # number of Gaussian primitive functions
@@ -40,17 +57,8 @@ class GFit(object):
         self._save = os.path.join(self._save, str(self._sn), '_', str(self._qn), '.npy')
 
         self._gf = []
-        self.peaks = []
-        self.is_fitted = False
+        self._is_fitted = False
         self._boundaries = []
-
-        if os.path.isfile(self._save):
-            self.print_info()
-            self._gf = np.load(self._gf)
-            self.is_fitted = True
-        else:
-            if data is not None:
-                self.do_fit(data)
 
     def print_info(self):
 
@@ -60,7 +68,7 @@ class GFit(object):
         print('The number of primitive Gaussians is {}'.format(self._num_fu))
         print('---------------------------------------------------------------------\n')
 
-    def initialize(self):
+    def init_conditions(self):
 
         if (self._flag == 2):
             if not self.peaks:
