@@ -1,3 +1,8 @@
+# from __future__ import absolute_import
+# from __future__ import division
+# from __future__ import print_function
+# import matplotlib
+# matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 from coordsys import CoordSys
@@ -10,7 +15,7 @@ from spec_func import *
 # T = 6
 
 num_cells = 50
-T = 1
+T = 2
 
 
 N_states = 2
@@ -61,9 +66,9 @@ for jj in range(N_states):
     bas_fun[jj+1]=bas_fun[jj+1]/np.sqrt(ME)
 
 
-# a=plt.contour((bas_fun[1][:,125,:]), 30); plt.colorbar()
-# plt.imshow((bas_fun[1][:,125,:]))
-# plt.show()
+a=plt.contour((bas_fun[1][:,51,:]), 30); plt.colorbar()
+plt.imshow((bas_fun[1][:,51,:]))
+plt.show()
 
 from fci.gauss_fit import GFit
 
@@ -71,13 +76,15 @@ qn=1
 
 # data = np.vstack((X1, Y1, Z1, bas_fun[qn].flatten())).T
 
-wf = GFit(init='fit',
-          sn=10,
+wf = GFit(sn=10,
           qn=qn,
-          mf=2,
           num_fu=12,
-          psave='./',
-          pload='./')
+          psave='./')
+
+wf.bounds = ([np.min(x), np.min(x), np.min(x), 0.000001, 0.00001]*wf._num_fu,
+             [np.max(x), np.max(x), np.max(x), 1.0, 1.0]*wf._num_fu)
+wf.nuclei_coords = np.array([Ra, Rb])
+wf.set_init_conditions(method = 'nuclei', widths=1, amps=1)
 
 wf.do_fit(bas_fun[1], x=X1, y=Y1, z=Z1)
 
