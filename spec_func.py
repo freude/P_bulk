@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 import numpy as np
 from scipy.special import binom
 from  math import floor, factorial
@@ -58,7 +61,7 @@ def LargeLambda(qn,jj,x):
 
 def AssociatedLegendre(l, m, x):
     Alm=np.zeros(x.shape)
-    for r in range(floor(1/2*l-1/2*abs(m))+1):
+    for r in range(int(floor(l/2-abs(m)/2))+1):
         Alm=Alm+((-1)**r)*binom(l-2*r,abs(m))*binom(l,r)*binom(2*l-2*r,l)*(x**(l-2*r-abs(m)))
 
     return ((-1)**m)*((1.0-x**2)**(abs(m)/2))*(factorial(abs(m))/(2**l)*Alm)

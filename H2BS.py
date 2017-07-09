@@ -14,11 +14,11 @@ from spec_func import *
 # num_cells = 50
 # T = 6
 
-num_cells = 50
-T = 2
+num_cells = 100
+T = 1
 
 
-N_states = 2
+N_states = 7
 
 #      n  l  m      E        p      sigma
 qn = [[1, 0, 0, -2.56853, 1.12186, 0.24792],      #1s_sigma_g
@@ -66,60 +66,71 @@ for jj in range(N_states):
     bas_fun[jj+1]=bas_fun[jj+1]/np.sqrt(ME)
 
 
-a=plt.contour((bas_fun[1][:,51,:]), 30); plt.colorbar()
-plt.imshow((bas_fun[1][:,51,:]))
+a=plt.contour(bas_fun[5][:,51,:], 30); plt.colorbar()
+plt.imshow((np.abs(bas_fun[5][:,51,:])))
 plt.show()
 
 from fci.gauss_fit import GFit
 
-qn=1
-
+qn=4
 # data = np.vstack((X1, Y1, Z1, bas_fun[qn].flatten())).T
 
 wf = GFit(sn=10,
           qn=qn,
-          num_fu=12,
+          num_fu=14,
           psave='./')
 
-wf.bounds = ([np.min(x), np.min(x), np.min(x), 0.000001, 0.00001]*wf._num_fu,
-             [np.max(x), np.max(x), np.max(x), 1.0, 1.0]*wf._num_fu)
+wf.cube = ([np.min(x), np.min(x), np.min(x)],
+           [np.max(x), np.max(x), np.max(x)])
+
 wf.nuclei_coords = np.array([Ra, Rb])
-wf.set_init_conditions(method = 'nuclei', widths=1, amps=1)
+wf.set_init_conditions(method = 'nuclei', widths=1, amps=0.5)
 
-wf.do_fit(bas_fun[1], x=X1, y=Y1, z=Z1)
+wf.do_fit(bas_fun[5], x=X1, y=Y1, z=Z1)
 
-x = np.linspace(-6.5, 6.5, 300)
-y = np.linspace(4.0, 8.9, 300)
+g = wf.get_data_matrix(X1, Y1, Z1)
+err=np.abs(bas_fun[5]-g)
+a=plt.contour((err[:,51,:]), 30); plt.colorbar()
+plt.imshow((err[:,51,:]))
+plt.show()
 
-XXX = np.vstack((x, x * 0.0 + 6.45, 0.0 * x))
+print(np.max(err))
+print(np.max(bas_fun[3]))
 
-xi, yi = np.meshgrid(x, y)
-x, y = xi.flatten(), yi.flatten()
-z = x * 0.0
-XX = np.vstack((x, y, z))
-
-# wf.save()
-print(wf._gf)
-# wf.draw_func(x,y,par='2d')
-g = wf.show_func(XX)
-g1 = wf.show_gf(XXX)
-AA = wf.get_value(XX.T)
-
+from mpl_toolkits.mplot3d import Axes3D
 fig = plt.figure()
-# for j in range(0,wf._num_fu):
-#     plt.plot(XXX[0,:].T,g1[:,j])
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(wf._gf[0::5], wf._gf[1::5], wf._gf[2::5])
 
-# plt.plot(xi[150, :].T, g.reshape(xi.shape)[150, :])
-# plt.plot(xi[150, :].T, AA.reshape(xi.shape)[150, :])
+ax.set_xlabel('X Label')
+ax.set_ylabel('Y Label')
+ax.set_zlabel('Z Label')
 
-# ax = fig.add_subplot(111, projection='3d')
-# ax.plot_surface(xi,yi,g1.reshape(xi.shape), cmap=cm.jet, linewidth=0.2)
+plt.show()
 
-plt.contour(xi, yi, -AA.reshape(xi.shape), colors='red')
-plt.contour(xi, yi, -g.reshape(xi.shape), colors='blue')
+a=plt.contour((g[:,51,:]), 30); plt.colorbar()
+plt.imshow(g[:,51,:])
+plt.show()
+
+# # wf.save()
+# print(wf._gf)
+# # wf.draw_func(x,y,par='2d')
+# g = wf.get_data(XX)
+# # g1 = wf.show_gf(XXX)
+# # AA = wf.get_value(XX.T)
+#
+# fig = plt.figure()
+# # for j in range(0,wf._num_fu):
+# #     plt.plot(XXX[0,:].T,g1[:,j])
+#
+# # plt.plot(xi[150, :].T, g.reshape(xi.shape)[150, :])
+# # plt.plot(xi[150, :].T, AA.reshape(xi.shape)[150, :])
+#
+# # ax = fig.add_subplot(111, projection='3d')
+# # ax.plot_surface(xi,yi,g1.reshape(xi.shape), cmap=cm.jet, linewidth=0.2)
+#
+# # plt.contour(xi, yi, -AA.reshape(xi.shape), colors='red')
+# plt.contour(xi, yi, g.reshape(xi.shape), 30, colors='blue')
 
 plt.hold(True)
 plt.show()
-
-
-

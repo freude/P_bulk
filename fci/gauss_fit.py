@@ -19,7 +19,7 @@ import pickle
 
 class GFit(object):
 
-    __slots__ = ('_bounds', '_save', '_num_fu', '_sn', '_qn', '_model', '_init_mode', '_gf', '_is_fitted', '_nuclei_coords')
+    __slots__ = ('_cube', '_bounds', '_save', '_num_fu', '_sn', '_qn', '_model', '_init_mode', '_gf', '_is_fitted', '_nuclei_coords', '_basis_set')
 
     def __new__(cls, *args, **kwargs):
 
@@ -55,6 +55,10 @@ class GFit(object):
         self._bounds = 0
         self._nuclei_coords = 0
 
+        # type of basis functions (s, px, py, pz)
+        self._basis_set = [6, 4, 4, 4]
+        self._num_fu = np.sum(self._basis_set)
+
     def print_info(self):
 
         print('\n---------------------------------------------------------------------')
@@ -64,12 +68,20 @@ class GFit(object):
         print('---------------------------------------------------------------------\n')
 
     @property
-    def bounds (self):
+    def bounds(self):
         return self._bounds
 
     @bounds.setter
-    def bounds (self, bounds):
+    def bounds(self, bounds):
         self._bounds = bounds
+
+    @property
+    def cube(self):
+        return self._cube
+
+    @cube.setter
+    def cube(self, cube_coords):
+        self._cube = cube_coords
 
     @property
     def nuclei_coords(self):
@@ -107,7 +119,7 @@ class GFit(object):
 
     # ------------------------------------------------------------------------------------------------
 
-    def _distr_gaussians_over_nuclei(self, coords, width, amp, num_fu=None):
+    def _distr_gaussians_over_nuclei(self, coords, width, amp, num_fu=None, set_bounds=True):
         """
         Distribute N Gaussian functions, N=self._num_fu, over M coordinates of nuclei, M=coords.shape[0]
 
@@ -116,6 +128,10 @@ class GFit(object):
         :param amp:
         :return:
         """
+
+        if set_bounds:
+
+            self._bounds = (np.zeros(self._num_fu*5), np.zeros(self._num_fu*5))
 
         if num_fu is None:
             num_fu = self._num_fu
@@ -133,6 +149,21 @@ class GFit(object):
             self._gf[j * 5 + 2] = coords[j1, 2]
             self._gf[j * 5 + 3] = width[j1]
             self._gf[j * 5 + 4] = amp[j1]
+
+            if set_bounds:
+
+                self._bounds[0][j * 5] = max(coords[j1, 0]-3.5, self.cube[0][0])
+                self._bounds[0][j * 5 + 1] = max(coords[j1, 1] - 3.5, self.cube[0][1])
+                self._bounds[0][j * 5 + 2] = max(coords[j1, 2] - 3.5, self.cube[0][2])
+                self._bounds[0][j * 5 + 3] = 0.01
+                self._bounds[0][j * 5 + 4] = -5.0
+
+                self._bounds[1][j * 5] = min(coords[j1, 0] + 3.5, self.cube[1][0])
+                self._bounds[1][j * 5 + 1] = min(coords[j1, 1] + 3.5, self.cube[1][1])
+                self._bounds[1][j * 5 + 2] = min(coords[j1, 2] + 3.5, self.cube[1][2])
+                self._bounds[1][j * 5 + 3] = 7.0
+                self._bounds[1][j * 5 + 4] = 5.0
+
             j1 += 1
 
     def _init_gaussians_from_lists(self, coords, width, amp):
@@ -166,31 +197,71 @@ class GFit(object):
             if x is not None:
                 data = mat2table(x, y, z, data)
 
-            popt, pcov = curve_fit(GFit.modelfun, data[:, :3], data[:, 3:], p0=self._gf, bounds=self._bounds)
+            popt, pcov = curve_fit(self.modelfun, data[:, :3].T, np.squeeze(data[:, 3:]), p0=self._gf, bounds=self._bounds, ftol=0.0000001, xtol=0.0000001)
             self._gf = popt
 
         else:
             sys.exit("Wrong flag in do_fit")
 
-    @staticmethod
-    def modelfun(x, *par):
+    # @staticmethod
+    # def modelfun(x, *par):
+    #     """
+    #     The model function represented by a sum of
+    #     the Gaussian functions with variable positions, widths and
+    #     amplitudes
+    #     """
+    #
+    #     g = np.zeros(len(x[0]))
+    #
+    #     for j in range(len(par)//5):
+    #         x1 = par[j*5]
+    #         x2 = par[j*5+1]
+    #         x3 = par[j*5+2]
+    #         w = par[j*5+3]
+    #         a = par[j*5+4]
+    #         r1 = pow((x[0]-x1), 2)+pow((x[1]-x2), 2)+pow((x[2]-x3), 2)
+    #         # if ((a > 1.1) or (a < -1.1)): a=0
+    #         g = g+a*np.exp(-r1/abs(w))
+    #
+    #     return g
+
+    def modelfun(self, x, *par):
         """
         The model function represented by a sum of
         the Gaussian functions with variable positions, widths and
         amplitudes
         """
 
-        g = np.zeros(x.shape[0])
+        g = np.zeros(len(x[0]))
+        basis_set = np.cumsum(self._basis_set)
 
-        for j in range(len(par)//5):
+        j = 0
+
+        flag = 0
+
+        for j in range(len(par) // 5):
             x1 = par[j*5]
             x2 = par[j*5+1]
             x3 = par[j*5+2]
             w = par[j*5+3]
             a = par[j*5+4]
-            r1 = pow((x[:,0]-x1), 2)+pow((x[:,1]-x2), 2)+pow((x[:,2]-x3), 2)
-            # if ((a > 1.1) or (a < -1.1)): a=0
-            g = g+a*np.exp(-r1/abs(w))
+
+            r1 = pow((x[0] - x1), 2) + pow((x[1] - x2), 2) + pow((x[2] - x3), 2)
+
+            if flag >= basis_set[flag]:
+                flag += 1
+
+            if flag == 0:
+                g = g+a*np.exp(-r1/abs(w))
+
+            if flag == 1:
+                g = g+a*(x[0] - x1)*np.exp(-r1/abs(w))
+
+            if flag == 2:
+                g = g+a*(x[1] - x2)*np.exp(-r1/abs(w))
+
+            if flag == 3:
+                g = g+a*(x[2] - x3)*np.exp(-r1/abs(w))
 
         return g
 
@@ -272,24 +343,29 @@ class GFit(object):
 # # --------------Tool for extracting values of the wave function------------
 # # -------------------------------------------------------------------------
 #
-#     def show_func(self, x):
-#         """
-#         Computes the value of the wave function in points stored in
-#         the vector x using fitting parameters and the model functions.
-#         """
-#
-#         if (self._flag == 1):
-#             g = self.modelfun(x, *self._gf)
-#         elif (self._flag == 2):
-#             g = self.modelfun1(x, *self._gf)
-#         elif ((self._flag == 0) & (self._load != '0')):
-#             pass
-#         else:
-#             # pass
-#             sys.exit("Wrong flag in do_fit")
-#
-#         return g
-#
+    def get_data(self, x):
+        """
+        Computes the value of the wave function in points stored in
+        the vector x using fitting parameters and the model functions.
+        """
+
+        if (self._model == 0):
+            g = self.modelfun(x, *self._gf)
+
+        return g
+
+    def get_data_matrix(self, *x):
+        """
+        Computes the value of the wave function in points stored in
+        the vector x using fitting parameters and the model functions.
+        """
+
+        coords = [j.flatten() for j in x]
+        XX = np.vstack(coords)
+        g = self.get_data(XX)
+
+        return g.reshape(x[0].shape)
+
 #     def show_gf(self, x):
 #         """Same as show_func(self,x) but returns
 #         decomposed primitive Gaussian functions
