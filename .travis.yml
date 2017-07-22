@@ -1,4 +1,4 @@
 language: python
-sudo: false
+sudo: true
 python: "2.7"
 script: print "hi"
