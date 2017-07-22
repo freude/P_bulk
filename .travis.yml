@@ -1,4 +1,4 @@
 language: python
 sudo: true
 python: "2.7"
-script: tests/test_H2BS.py
+script: python ./tests/test_H2BS.py
