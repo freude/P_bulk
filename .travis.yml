@@ -1,4 +1,4 @@
 language: python
 sudo: true
 python: "2.7"
-script: pytest
+script: nosetests
