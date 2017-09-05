@@ -3,6 +3,7 @@ import numpy as np
 from scipy.integrate import simps
 from invdisttree import Invdisttree
 import silicon_params as si
+from read_cube import read_cube
 
 
 def transform_to_uc(wf1, L):
@@ -85,9 +86,12 @@ def read_wf(T, k1):
 
     else:
 
-        wf = np.loadtxt('/home/m_klymenko/P_bulk/si_wf/wf__k11_b6')
-        wfr = transform_to_uc(np.reshape(wf[:, 3], (20, 20, 20)), 30)
-        wfi = transform_to_uc(np.reshape(wf[:, 4], (20, 20, 20)), 30)
+        # wf = np.loadtxt('/home/m_klymenko/P_bulk/si_wf/wf__k11_b6')
+        wf = read_cube('/home/mk/qe_si/results/silicon.wf_K001_B005.cube')
+        wfr = transform_to_uc(wf, 30)
+        wfi = np.zeros(np.shape(wfr))
+        # wfr = transform_to_uc(np.reshape(wf[:, 3], (20, 20, 20)), 30)
+        # wfi = transform_to_uc(np.reshape(wf[:, 4], (20, 20, 20)), 30)
 
         wfr = transform_to_uc(wfr, T)
         wfi = transform_to_uc(wfi, T)
@@ -106,16 +110,16 @@ def read_wf(T, k1):
 def abi_read(fac, T, valley):
     # the function reads the periodic functions computed by ABINIT
     # for fac number of unit cells
-    
+
     wf1 = read_wf(T, valley)
-    
+
     # if valley(find(valley))<0
     #     wf1=-wf1;
     # end;
-    
+
     # compose a fac number of cells
     wf = np.zeros((fac*T, fac*T, fac*T), dtype=np.complex)
-    
+
     for j1 in xrange(fac):
         for j2 in xrange(fac):
             for j3 in xrange(fac):

@@ -251,8 +251,7 @@ EigVec1 = EigVec(:, ind);
                                     # dlmwrite('/data/users/mklymenko/abinitio_software/abi_files/tpaw/M.mat', EigVec1);
 
 # construct_wf3
-  # ---------------------------Add
-p - orbitals - ---------------------------
+  # ---------------------------Add p - orbitals - ---------------------------
                # main_script_p3
 
                # p1 = importdata(['/data/users/mklymenko/abinitio_software/abi_files/tpaw/', 'dis/v0/ff_0.dat']);

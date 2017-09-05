@@ -6,6 +6,7 @@ WDIR=$(pwd)
 
 # rm $WDIR/dis_scr/mesh_sample.mesh
 
+# ---------------------- making mesh ------------------------
 if [ ! -f "$WDIR/dis_scr/mesh_sample.mesh" ]; then
 
     cat > make_mesh.edp << EOF
@@ -23,10 +24,13 @@ EOF
 
 fi
 
+# -------------------- making potential ---------------------
 if [ ! -f "$WDIR/dis_scr/pot3.txt" ]; then
     matlab -nojvm -nodisplay -nosplash -r "run('$WDIR/pot_ff.m');exit;"
+#    python $WDIR/pot_ff.py
 fi
 
+# ---------------- computing envelope functions  -----------
 FreeFem++ $WDIR/si_ham.edp 0 0 1.0 1.0 0.19 $WDIR/dis_scr&
 FreeFem++ $WDIR/si_ham.edp 0 0 1.0 0.19 1.0 $WDIR/dis_scr&
 FreeFem++ $WDIR/si_ham.edp 0 0 0.19 1.0 1.0 $WDIR/dis_scr&

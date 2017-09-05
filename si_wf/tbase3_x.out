@@ -1,6 +1,6 @@
 
 .Version 8.4.2 of ABINIT 
-.(MPI version, prepared for a x86_64_linux_gnu4.8 computer) 
+.(sequential version, prepared for a x86_64_linux_gnu6.3 computer) 
 
 .Copyright (C) 1998-2017 ABINIT group . 
  ABINIT comes with ABSOLUTELY NO WARRANTY.
@@ -14,8 +14,8 @@
  acknowledgments of the ABINIT effort.
  For more information, see http://www.abinit.org .
 
-.Starting date : Tue 18 Jul 2017.
-- ( at 16h24 )
+.Starting date : Thu  3 Aug 2017.
+- ( at 21h20 )
   
 - input  file    -> tbase3_5.in
 - output file    -> tbase3_x.out
@@ -296,11 +296,11 @@ _setup2: Arith. and geom. avg. npw (full set) are     289.031     289.009
 ================================================================================
 
      iter   Etot(hartree)      deltaE(h)  residm     vres2
- ETOT  1  -8.8670397211174    -8.867E+00 4.789E-03 5.724E+00
- ETOT  2  -8.8724810028749    -5.441E-03 2.747E-04 1.581E-01
- ETOT  3  -8.8725585064774    -7.750E-05 1.239E-05 2.938E-03
- ETOT  4  -8.8725593989852    -8.925E-07 8.043E-07 1.103E-05
- ETOT  5  -8.8725594041038    -5.119E-09 2.902E-07 2.947E-08
+ ETOT  1  -8.8670397211181    -8.867E+00 4.789E-03 5.724E+00
+ ETOT  2  -8.8724810028755    -5.441E-03 2.747E-04 1.581E-01
+ ETOT  3  -8.8725585064781    -7.750E-05 1.239E-05 2.938E-03
+ ETOT  4  -8.8725593989858    -8.925E-07 8.043E-07 1.103E-05
+ ETOT  5  -8.8725594041045    -5.119E-09 2.902E-07 2.947E-08
 
  At SCF step    5, etot is converged : 
   for the second time, diff in etot=  5.119E-09 < toldfe=  1.000E-06
@@ -354,16 +354,16 @@ _setup2: Arith. and geom. avg. npw (full set) are     289.031     289.009
  Components of total free energy (in Hartree) :
 
     Kinetic energy  =  3.02586404019089E+00
-    Hartree energy  =  5.37872698000341E-01
+    Hartree energy  =  5.37872698000340E-01
     XC energy       = -3.53883494296723E+00
     Ewald energy    = -8.43664533146725E+00
-    PspCore energy  =  8.60690571501039E-02
+    PspCore energy  =  8.60690571494473E-02
     Loc. psp. energy= -2.42996662280501E+00
     NL   psp  energy=  1.88308169779436E+00
-    >>>>>>>>> Etotal= -8.87255940410379E+00
+    >>>>>>>>> Etotal= -8.87255940410445E+00
 
  Other information on the energy :
-    Total energy(eV)= -2.41434619765721E+02 ; Band energy (Ha)=   2.3182677458E-01
+    Total energy(eV)= -2.41434619765739E+02 ; Band energy (Ha)=   2.3182677458E-01
 --------------------------------------------------------------------------------
 
  Cartesian components of stress tensor (hartree/bohr^3)
@@ -485,7 +485,7 @@ _setup2: Arith. and geom. avg. npw (full set) are     289.031     289.009
   3.3067E-01  3.5944E-01
   prteigrs : nnsclo,ikpt=   10   19 max resid (incl. the buffer)=  6.91279E-12
  Non-SCF case, kpt   20 (  0.00000  0.08500  0.08500), residuals and eigenvalues=
-  5.27E-13  5.76E-13  9.96E-13  2.71E-13  1.86E-13  3.38E-13  1.09E-12  8.42E-12
+  5.27E-13  5.76E-13  9.97E-13  2.71E-13  1.86E-13  3.38E-13  1.09E-12  8.42E-12
  -2.2204E-01  1.9079E-01  2.0057E-01  2.0057E-01  2.9930E-01  3.3292E-01
   3.3292E-01  3.6158E-01
   prteigrs : nnsclo,ikpt=   10   20 max resid (incl. the buffer)=  8.41909E-12
@@ -1255,7 +1255,7 @@ P           mkmem2        105
                        5.0000000000E-01  5.0000000000E-01  0.0000000000E+00
            shiftk      5.00000000E-01  5.00000000E-01  5.00000000E-01
           spgroup         227
-           strten1     2.9301643500E-05  2.9301643500E-05  2.9301643500E-05
+           strten1     2.9301643503E-05  2.9301643503E-05  2.9301643503E-05
                        0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
            symrel      1  0  0   0  1  0   0  0  1      -1  0  0   0 -1  0   0  0 -1
                        0 -1  1   0 -1  0   1 -1  0       0  1 -1   0  1  0  -1  1  0
@@ -1332,10 +1332,47 @@ P           mkmem2        105
 
 ================================================================================
 
+- Total cpu        time (s,m,h):         42.0        0.70      0.012
+- Total wall clock time (s,m,h):         12.7        0.21      0.004
+-
+- For major independent code sections, cpu and wall times (sec),
+-  as well as % of the time and number of calls for node 0-
+-<BEGIN_TIMER mpi_nprocs = 1, omp_nthreads = 1, mpi_rank = 0>
+- cpu_time =           42.0, wall_time =           12.7
+-
+- routine                        cpu     %       wall     %      number of calls  Gflops    Speedup Efficacity
+-                                                                  (-1=no count)
+- fourwf%(pot)                  23.996  57.1      6.626  52.2          21050      -1.00        3.62       3.62
+- projbd                         3.920   9.3      1.027   8.1          32488      -1.00        3.82       3.82
+- vtowfk(ssdiag)                 3.760   8.9      1.227   9.7             -1      -1.00        3.06       3.06
+- nonlop(apply)                  3.132   7.5      0.862   6.8          21050      -1.00        3.63       3.63
+- getghc-other                   1.716   4.1      0.511   4.0             -1      -1.00        3.36       3.36
+- pspini                         0.632   1.5      0.749   5.9              2      -1.00        0.84       0.84
+- newkpt(excl. rwwf   )          0.216   0.5      0.070   0.6             -1      -1.00        3.09       3.09
+- others (106)                   0.912   2.2      0.492   3.9             -1      -1.00        1.85       1.85
+-<END_TIMER>
+-
+- subtotal                      38.284  91.1     11.564  91.0                                  3.31       3.31
 
-- Timing analysis has been suppressed with timopt=0
+- For major independent code sections, cpu and wall times (sec),
+- as well as % of the total time and number of calls 
 
+-<BEGIN_TIMER mpi_nprocs = 1, omp_nthreads = 1, mpi_rank = world>
+- cpu_time =          42.0, wall_time =          12.7
+-
+- routine                         cpu     %       wall     %      number of calls Gflops    Speedup Efficacity
+-                                                                  (-1=no count)
+- fourwf%(pot)                  23.996  57.1      6.626  52.2          21050      -1.00        3.62       3.62
+- projbd                         3.920   9.3      1.027   8.1          32488      -1.00        3.82       3.82
+- vtowfk(ssdiag)                 3.760   8.9      1.227   9.7             -1      -1.00        3.06       3.06
+- nonlop(apply)                  3.132   7.5      0.862   6.8          21050      -1.00        3.63       3.63
+- getghc-other                   1.716   4.1      0.511   4.0             -1      -1.00        3.36       3.36
+- pspini                         0.632   1.5      0.749   5.9              2      -1.00        0.84       0.84
+- newkpt(excl. rwwf   )          0.216   0.5      0.070   0.6             -1      -1.00        3.09       3.09
+- others (106)                   0.912   2.2      0.492   3.9             -1      -1.00        1.85       1.85
+-<END_TIMER>
 
+- subtotal                      38.284  91.1     11.564  91.0                                  3.31       3.31
 
 ================================================================================
 
@@ -1401,10 +1438,10 @@ P           mkmem2        105
 - Computational Materials Science 25, 478-492 (2002). http://dx.doi.org/10.1016/S0927-0256(02)00325-7
 - Comment : the original paper describing the ABINIT project.
 -
-- Proc.   0 individual time (sec): cpu=         46.6  wall=          6.4
+- Proc.   0 individual time (sec): cpu=         42.0  wall=         12.7
 
 ================================================================================
 
  Calculation completed.
 .Delivered   2 WARNINGs and   2 COMMENTs to log file.
-+Overall time at end (sec) : cpu=         46.6  wall=          6.4
++Overall time at end (sec) : cpu=         42.0  wall=         12.7
